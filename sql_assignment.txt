@@ -1,0 +1,138 @@
+create database assignment
+use assignment;
+Database changed
+1.create  table branch_master(branch_id varchar(6) primary key,branch_name varchar(30), branch_city varchar(30));
+
+2. create  table loan_detail(customer_number varchar(6) ,branch_id varchar(30), loan_amount int ,foreign key(branch_id) 
+references branch_master(branch_id), foreign key (customer_number) references customer_master(customer_number));
+
+3.create  table customer_master(customer_number varchar(6) primary key,firstname varchar(30),middlename varchar(30),
+lastname varchar(30),customer_city varchar(15), customer_contact_number varchar(10), occupation varchar(20),
+customer_date_of_birth date );
+
+4.create  table account_master(account_number varchar(6) primary key,customer_number varchar(6),branch_id varchar(6),
+opening_balance int,account_opening_date date, customer_type varchar(10), account_status varchar(10),foreign key (customer_number) references customer_master(customer_number),
+foreign key(branch_id) references branch_master(branch_id));
+
+5.create  table transaction_details(transaction_number varchar(6) primary key ,account_number varchar(6),date_of_transaction date,medium_of_transaction varchar(20),
+transaction_type varchar(20),transaction_amount int,foreign key (account_number) references account_master(account_number));
+
+insert into branch_master values("12345","ICICI","Pune");
+insert into branch_master values("123456","SBI","Pune");
+
+insert into customer_master values("123","Ram","Shyam","Sharma","Pune","1234567890","Doctor","1988-03-15");
+insert into customer_master values("124","Mahendra","Singh","Dhoni","Pune","1234567890","Teacher","1990-08-25");
+
+insert into account_master values("1234","123","123456",1000,"2020-01-20","premium","active");
+insert into account_master values("1235","124","12345",1000,"2019-05-20","premium","active");
+
+insert into loan_detail values("123","12345",50000);
+insert into loan_detail values("124","123456",20000);
+
+insert into transaction_details values("1","1234","2019-04-12" ,"net banking", "withdraw",500);
+insert into transaction_details values("2","1235","2020-03-01" ,"net banking", "withdraw",1000);
+
+
+
+mysql> select * from account_master;
++----------------+-----------------+-----------+-----------------+----------------------+---------------+----------------+
+| account_number | customer_number | branch_id | opening_balance | account_opening_date | customer_type | account_status |
++----------------+-----------------+-----------+-----------------+----------------------+---------------+----------------+
+| 1234           | 123             | 123456    |            1000 | 2020-01-20           | premium       | active         |
+| 1235           | 124             | 12345     |            1000 | 2019-05-20           | premium       | active         |
++----------------+-----------------+-----------+-----------------+----------------------+---------------+----------------+
+2 rows in set (0.00 sec)
+
+mysql> select * from branch_master;
++-----------+-------------+-------------+
+| branch_id | branch_name | branch_city |
++-----------+-------------+-------------+
+| 12345     | ICICI       | Pune        |
+| 123456    | SBI         | Pune        |
+| 12346     | ICICI       | delhi       |
+| 12347     | ICICI       | delhi       |
++-----------+-------------+-------------+
+4 rows in set (0.00 sec)
+
+mysql> select * from customer_master;
++-----------------+-----------+------------+----------+---------------+-------------------------+------------+------------------------+
+| customer_number | firstname | middlename | lastname | customer_city | customer_contact_number | occupation | customer_date_of_birth |
++-----------------+-----------+------------+----------+---------------+-------------------------+------------+------------------------+
+| 123             | Ram       | Shyam      | Sharma   | Pune          | 1234567890              | Doctor     | 1988-03-15             |
+| 124             | Mahendra  | Singh      | Dhoni    | Pune          | 1234567890              | Teacher    | 1990-08-25             |
+| 127             | romil     | Shyam      | Sharma   | delhi         | 1234567890              | Doctor     | 1988-03-15             |
+| 129             | nisha     | riya       | Sharma   | delhi         | 1234567890              | Doctor     | 1988-03-15             |
++-----------------+-----------+------------+----------+---------------+-------------------------+------------+------------------------+
+4 rows in set (0.00 sec)
+
+ select * from loan_detail;
++-----------------+-----------+-------------+
+| customer_number | branch_id | loan_amount |
++-----------------+-----------+-------------+
+| 123             | 12345     |       50000 |
+| 124             | 123456    |       20000 |
++-----------------+-----------+-------------+
+2 rows in set (0.00 sec)
+mysql> select * from transaction_details;
++--------------------+----------------+---------------------+-----------------------+------------------+--------------------+
+| transaction_number | account_number | date_of_transaction | medium_of_transaction | transaction_type | transaction_amount |
++--------------------+----------------+---------------------+-----------------------+------------------+--------------------+
+| 1                  | 1234           | 2019-04-12          | net banking           | withdraw         |                500 |
+| 2                  | 1235           | 2020-03-01          | net banking           | withdraw         |               1000 |
++--------------------+----------------+---------------------+-----------------------+------------------+--------------------+
+
+
+
+
+QUESTIONS-Answer
+Q.1 
+ select account_master.account_number,account_master.customer_number,customer_master.firstname,customer_master.lastname,account_master.account_opening_date from account_master join customer_master on account_master.customer_number=customer_master.customer_number;
++----------------+-----------------+-----------+----------+----------------------+
+| account_number | customer_number | firstname | lastname | account_opening_date |
++----------------+-----------------+-----------+----------+----------------------+
+| 1234           | 123             | Ram       | Sharma   | 2020-01-20           |
+| 1235           | 124             | Mahendra  | Dhoni    | 2019-05-20           |
++----------------+-----------------+-----------+----------+----------------------+
+
+Q.2
+select count(customer_city) as "Cust_Count" from customer_master where customer_city="delhi";
++------------+
+| Cust_Count |
++------------+
+|          2 |
+
+Q.3
+select customer_master.customer_number,customer_master.firstname,account_master.account_number from account_master ,customer_master where account_master.customer_number=customer_master.customer_number and day(account_opening_date)>15;
++-----------------+-----------+----------------+
+| customer_number | firstname | account_number |
++-----------------+-----------+----------------+
+| 123             | Ram       | 1234           |
+| 124             | Mahendra  | 1235           |
++-----------------+-----------+----------------+
+
+Q.4
+ select account_master.customer_number,account_master.account_number,customer_master.firstname from account_master ,customer_master  where account_master.customer_number=customer_master.customer_number and account_status="terminated";
+Q.5
+ select transaction_type,count(*) as Trans_count from transaction_details ,account_master where transaction_details.account_number=account_master.account_number and a.customer_number="13";
+
+Q.6. 
+select count(*) as Count_Customer from customer_master where customer_number not in(select distinct customer_number from account_master);
+
+Q.7.
+select distinct a.account_number,sum(t.transaction_amount)+a.opening_balance as Deposit_Amount from account_master a,transaction_details t where  t.account_number=a.account_number and transaction_type="deposit" group by account_number
+union
+select account_number,opening_balance from account_master where account_number not in
+(select account_number from transaction_details);
+
+8. select b.branch_city,count(*) from branch_master b,account_master a where b.branch_id=a.branch_id group by branch_city
+union
+select branch_city,0 from branch_master where branch_city not in
+(select branch_city from branch_master b,account_master a where a.branch_id=b.branch_id group by branch_city)
+union
+select b.branch_id,count(*) from branch_master b,account_master a where a.branch_id=b.branch_id group by branch_id
+union
+select branch_id,0 from branch_master where branch_id not in
+(select a.branch_id from branch_master b,account_master a where a.branch_id=b.branch_id group by branch
+
+
++------------+
